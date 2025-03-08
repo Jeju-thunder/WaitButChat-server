@@ -1,0 +1,113 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+
+model member {
+  id                Int   @id @default(autoincrement())
+  email             String
+  ci                String
+  gender            String
+  provider          String
+  manner_status     Int
+  auth_token        String
+  created_at        DateTime @db.Timestamptz()
+  updated_at        DateTime? @db.Timestamptz()
+  answers           answer[]
+  anonymous_members  anonymous_members[]
+  reporter          report[] @relation("reporter")
+  reported          report[] @relation("reported")
+}
+
+model register_blacklist {
+  id          Int   @id @default(autoincrement())
+  ci          String
+  period_days Int
+  created_at  DateTime @db.Timestamptz()
+  updated_at  DateTime? @db.Timestamptz()
+}
+
+model question {
+  id          Int   @id @default(autoincrement())
+  title       String
+  content     String
+  used_at     DateTime? @db.Timestamptz()
+  created_at  DateTime @db.Timestamptz()
+  updated_at  DateTime? @db.Timestamptz()
+  answers     answer[]
+}
+
+model answer {
+  id          Int   @id @default(autoincrement())
+  content     String
+  created_at  DateTime @db.Timestamptz()
+  updated_at  DateTime? @db.Timestamptz()
+  question_id Int
+  question    question @relation(fields: [question_id], references: [id])
+  member_id   Int
+  member      member @relation(fields: [member_id], references: [id])
+}
+
+model chat_room {
+  id          Int   @id @default(autoincrement())
+  created_at  DateTime @db.Timestamptz()
+  updated_at  DateTime? @db.Timestamptz()
+  matches     match[]
+  chats       chat[]
+  reports     report[]
+}
+
+model anonymous_members {
+  id                Int   @id @default(autoincrement())
+  member_id        Int
+  member           member @relation(fields: [member_id], references: [id])
+  created_at       DateTime @db.Timestamptz()
+  updated_at       DateTime? @db.Timestamptz()
+  matches          match[]
+  chats            chat[]
+}
+
+model match {
+  id                    Int   @id @default(autoincrement())
+  chat_room_id         Int
+  chatRoom             chat_room @relation(fields: [chat_room_id], references: [id])
+  anonymous_members_id  Int
+  anonymousMembers      anonymous_members @relation(fields: [anonymous_members_id], references: [id])
+  created_at           DateTime @db.Timestamptz()
+  updated_at           DateTime? @db.Timestamptz()
+}
+
+model chat {
+  id                          Int   @id @default(autoincrement())
+  chat_room_id               Int
+  chatRoom                   chat_room @relation(fields: [chat_room_id], references: [id])
+  created_by_anonymous_member_id Int
+  createdByAnonymousMember    anonymous_members @relation(fields: [created_by_anonymous_member_id], references: [id])
+  content                     String
+  created_at                  DateTime @db.Timestamptz()
+  updated_at                  DateTime? @db.Timestamptz()
+}
+
+model report {
+  id                    Int   @id @default(autoincrement())
+  reported_member_id   Int
+  reportedMember       member @relation("reported", fields: [reported_member_id], references: [id])
+  report_member_id     Int
+  reportMember         member @relation("reporter", fields: [report_member_id], references: [id])
+  chat_room_id         Int
+  chatRoom             chat_room @relation(fields: [chat_room_id], references: [id])
+  reason               String
+  created_at           DateTime @db.Timestamptz()
+  updated_at           DateTime? @db.Timestamptz()
+}

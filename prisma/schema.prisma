@@ -16,6 +16,7 @@ datasource db {
 
 model member {
   id                Int   @id @default(autoincrement())
+  kakao_id          BigInt
   email             String
   ci                String
   gender            String

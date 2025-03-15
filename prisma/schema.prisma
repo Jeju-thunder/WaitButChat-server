@@ -16,12 +16,11 @@ datasource db {
 
 model member {
   id                Int   @id @default(autoincrement())
+  kakao_id          BigInt
   email             String
-  ci                String
   gender            String
   provider          String
   manner_status     Int
-  auth_token        String
   created_at        DateTime @db.Timestamptz()
   updated_at        DateTime? @db.Timestamptz()
   answers           answer[]
@@ -32,7 +31,7 @@ model member {
 
 model register_blacklist {
   id          Int   @id @default(autoincrement())
-  ci          String
+  email          String
   period_days Int
   created_at  DateTime @db.Timestamptz()
   updated_at  DateTime? @db.Timestamptz()

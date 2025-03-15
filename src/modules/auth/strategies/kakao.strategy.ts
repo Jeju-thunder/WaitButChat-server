@@ -10,13 +10,12 @@ export class KakaoStrategy extends PassportStrategy(Strategy) {
     super({
       clientID: configService.get('KAKAO_CLIENT_ID') || '', // Ensure clientID is a string
       clientSecret: '', // You may want to retrieve this from config as well
-      callbackURL: `${configService.get('BACKEND_URL')}/auth/kakao/callback`,
+      callbackURL: `${configService.get('FRONTEND_URL')}/kakao/redirect`,
     });
   }
 
   async validate(accessToken: string, refreshToken: string, profile: Profile) {
-    const user = await this.authService.validateKakaoUser(profile);
-    console.log("validate user: ", user);
+    const user = await this.authService.handleKakaoUser(profile);
     return user;
   }
 

@@ -1,18 +1,18 @@
 import { JwtService } from '@nestjs/jwt';
 import {
-    member,
-    PrismaClient,
+  member,
+  PrismaClient,
 } from "@prisma/client"
-import { PrismaService } from '../prisma/prisma.service';
 import { Profile } from 'passport-kakao';
 import { Injectable } from '@nestjs/common';
+import { PrismaService } from 'src/modules/prisma/prisma.service';
 
 @Injectable()
 export default class AuthService {
   constructor(
     private readonly jwtService: JwtService,
     private readonly prismaService: PrismaService,
-  ) {}
+  ) { }
 
   async handleKakaoUser(profile: Profile): Promise<any> {
     const { id, _json } = profile;

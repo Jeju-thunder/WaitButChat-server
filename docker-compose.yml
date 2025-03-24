@@ -8,27 +8,9 @@ services:
     depends_on:
       - db
     environment:
-      DATABASE_URL: postgres://postgres:password@db:5432/mydatabase
-    networks:
-      - app_network
-
-  db:
-    image: postgres:15
-    container_name: nestjs_db
-    restart: always
-    ports:
-      - "5432:5432"
-    environment:
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: password
-      POSTGRES_DB: mydatabase
-    volumes:
-      - db_data:/var/lib/postgresql/data
+      DATABASE_URL: ${DATABASE_URL}
     networks:
       - app_network
 
 networks:
   app_network:
-
-volumes:
-  db_data:

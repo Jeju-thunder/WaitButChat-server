@@ -5,8 +5,6 @@ services:
     restart: always
     ports:
       - "8080:8080"
-    depends_on:
-      - db
     environment:
       DATABASE_URL: ${DATABASE_URL}
     networks:

@@ -1,5 +1,5 @@
 # 1. Node.js 기반 이미지 사용 (Alpine 버전)
-FROM node:18-alpine
+FROM node:20.12.2-alpine
 
 # 2. 작업 디렉토리 설정
 WORKDIR /app

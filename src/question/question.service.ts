@@ -6,10 +6,20 @@ import { Injectable, NotFoundException } from "@nestjs/common";
 export default class QuestionService {
     constructor(private readonly prisma: PrismaService) { }
 
-    async getQuestions(formattedDate: string = new Date().toISOString().split('T')[0]): Promise<GetQuestionResponse> {
+    async getQuestions(formattedDate: Date = new Date()): Promise<GetQuestionResponse> {
+        const today = new Date();
+        const kstToday = new Date(Date.UTC(
+            today.getUTCFullYear(),
+            today.getUTCMonth(),
+            today.getUTCDate(),
+            -9, // UTC+9 기준 자정은 UTC-9시
+            0,
+            0,
+            0
+        ));
         const questions = await this.prisma.question.findMany({
             where: {
-                used_at: new Date(formattedDate)
+                used_at: kstToday
             },
             include: {
                 answers: true

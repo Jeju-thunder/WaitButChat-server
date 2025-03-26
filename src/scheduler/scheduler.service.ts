@@ -6,15 +6,24 @@ import { PrismaService } from 'src/modules/prisma/prisma.service';
 export class SchedulerService {
     constructor(private readonly prisma: PrismaService) { }
 
-    @Cron(CronExpression.EVERY_DAY_AT_MIDNIGHT)
+    @Cron(CronExpression.EVERY_DAY_AT_MIDNIGHT, {
+        timeZone: 'Asia/Seoul'
+    })
     async handleDailyCron() {
         const today = new Date();
-        const formattedDate = today.toISOString().split('T')[0]; // YYYY-MM-DD 형태로 변환
-
+        const kstToday = new Date(Date.UTC(
+            today.getUTCFullYear(),
+            today.getUTCMonth(),
+            today.getUTCDate(),
+            -9, // UTC+9 기준 자정은 UTC-9시
+            0,
+            0,
+            0
+        ));
         // 오늘날짜 질문이 있는지 확인
         const todayQuestion = await this.prisma.question.findFirst({
             where: {
-                used_at: new Date(formattedDate)
+                used_at: kstToday
             }
         });
 
@@ -32,7 +41,7 @@ export class SchedulerService {
             if (notUsedQuestion) {
                 await this.prisma.question.update({
                     where: { id: notUsedQuestion.id },
-                    data: { used_at: new Date(formattedDate) }
+                    data: { used_at: kstToday }
                 });
             } else {
                 console.log("남은 질문이 없습니다.");

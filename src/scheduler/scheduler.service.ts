@@ -11,19 +11,19 @@ export class SchedulerService {
     })
     async handleDailyCron() {
         const today = new Date();
-        const kstToday = new Date(Date.UTC(
-            today.getUTCFullYear(),
-            today.getUTCMonth(),
-            today.getUTCDate(),
-            -9, // UTC+9 기준 자정은 UTC-9시
-            0,
-            0,
-            0
-        ));
+        // 현재 한국 날짜 구하기
+        const koreaDate = new Date(today.getTime() + 9 * 60 * 60 * 1000);
+        const year = koreaDate.getUTCFullYear();
+        const month = koreaDate.getUTCMonth();
+        const day = koreaDate.getUTCDate();
+        console.log("koreaDate: ", koreaDate);
+        // 한국 자정 시간을 UTC로 변환
+        const kstMidnightInUTC = new Date(Date.UTC(year, month, day, 15 - 24, 0, 0, 0));
+        console.log("kstMidnightInUTC: ", kstMidnightInUTC);
         // 오늘날짜 질문이 있는지 확인
         const todayQuestion = await this.prisma.question.findFirst({
             where: {
-                used_at: kstToday
+                used_at: kstMidnightInUTC
             }
         });
 
@@ -41,7 +41,7 @@ export class SchedulerService {
             if (notUsedQuestion) {
                 await this.prisma.question.update({
                     where: { id: notUsedQuestion.id },
-                    data: { used_at: kstToday }
+                    data: { used_at: kstMidnightInUTC }
                 });
             } else {
                 console.log("남은 질문이 없습니다.");

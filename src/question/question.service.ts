@@ -8,18 +8,20 @@ export default class QuestionService {
 
     async getQuestions(formattedDate: Date = new Date()): Promise<GetQuestionResponse> {
         const today = new Date();
-        const kstToday = new Date(Date.UTC(
-            today.getUTCFullYear(),
-            today.getUTCMonth(),
-            today.getUTCDate(),
-            -9, // UTC+9 기준 자정은 UTC-9시
-            0,
-            0,
-            0
-        ));
+        // 현재 한국 날짜 구하기
+        const koreaDate = new Date(today.getTime() + 9 * 60 * 60 * 1000);
+        const year = koreaDate.getUTCFullYear();
+        const month = koreaDate.getUTCMonth();
+        const day = koreaDate.getUTCDate();
+        console.log("koreaDate: ", koreaDate);
+        // 한국 자정 시간을 UTC로 변환
+        const kstMidnightInUTC = new Date(Date.UTC(year, month, day, 15 - 24, 0, 0, 0));
+        console.log("kstMidnightInUTC: ", kstMidnightInUTC);
+
+
         const questions = await this.prisma.question.findMany({
             where: {
-                used_at: kstToday
+                used_at: kstMidnightInUTC
             },
             include: {
                 answers: true

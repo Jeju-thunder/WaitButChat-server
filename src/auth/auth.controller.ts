@@ -1,8 +1,7 @@
-import { Controller, Get, HttpCode, HttpStatus, Req, Res, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, HttpCode, HttpStatus, Post, Req, Res, UseGuards } from '@nestjs/common';
 import AuthService from './auth.service';
 import { AuthGuard } from '@nestjs/passport';
 import CustomResponse from 'src/structure/custom-response';
-import { JWT_STRATEGY } from './strategies/jwt.strategy';
 
 @Controller('auth')
 export default class AuthController {
@@ -17,11 +16,31 @@ export default class AuthController {
       accessToken: req.user.accessToken,
       refreshToken: req.user.refreshToken,
     }
-    let response: CustomResponse<any>;
-    if (req.user.is_signup) {
+    if (req.user.isSignup) {
       return new CustomResponse(HttpStatus.CREATED, HttpStatus[HttpStatus.CREATED], "회원가입 성공", tokens);
     } else {
       return new CustomResponse(HttpStatus.OK, HttpStatus[HttpStatus.OK], "로그인 성공", tokens);
     }
   }
+
+  @Post("local/signup")
+  async localSignup(@Body() body: { kakaoId: string, email: string, gender: string }): Promise<CustomResponse<any>> {
+    const response = await this.authService.localSignup(body.kakaoId, body.email, body.gender);
+    const tokens = {
+      accessToken: response.accessToken,
+      refreshToken: response.refreshToken,
+    }
+    return new CustomResponse(HttpStatus.CREATED, HttpStatus[HttpStatus.CREATED], "회원가입 성공", tokens);
+  }
+
+  @Post("local/signin")
+  async localSignin(@Body() body: { kakaoId: string }): Promise<CustomResponse<any>> {
+    const response = await this.authService.localSignin(body.kakaoId);
+    const tokens = {
+      accessToken: response.accessToken,
+      refreshToken: response.refreshToken,
+    }
+    return new CustomResponse(HttpStatus.OK, HttpStatus[HttpStatus.OK], "로그인 성공", tokens);
+  }
+
 }

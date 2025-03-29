@@ -10,7 +10,7 @@ export class KakaoStrategy extends PassportStrategy(Strategy) {
     super({
       clientID: configService.get('KAKAO_CLIENT_ID') || '', // Ensure clientID is a string
       clientSecret: '', // You may want to retrieve this from config as well
-      callbackURL: `${configService.get('FRONTEND_URL')}/kakao/redirect`,
+      callbackURL: `${configService.get('CLIENT_URL')}/kakao/redirect`,
     });
   }
 

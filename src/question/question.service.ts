@@ -1,6 +1,11 @@
 import { PrismaService } from "src/modules/prisma/prisma.service";
-import GetQuestionResponse from "./dto/get-question.response.dto";
-import { Injectable, NotFoundException } from "@nestjs/common";
+import GetQuestionResponse from "./dto/response/get-question.response.dto";
+import { BadRequestException, Injectable, NotFoundException } from "@nestjs/common";
+import GetAnswerResponse from "./dto/response/get-answer.response.dto";
+import CreateAnswerRequest from "./dto/request/create-answer-request.dto";
+import CreateAnswerResponse from "./dto/response/create-answer-response.dto";
+import { member } from '@prisma/client';
+
 
 @Injectable()
 export default class QuestionService {
@@ -51,5 +56,53 @@ export default class QuestionService {
         };
     }
 
+    async getAnswerByQuestionId(member: member, id: number): Promise<GetAnswerResponse> {
+        const answer = await this.prisma.answer.findFirst({
+            where: { question_id: id, member_id: member.id }
+        });
+
+        if (!answer) {
+            throw new NotFoundException('답변을 찾을 수 없습니다.');
+        }
+
+        // FIXME: 지금은 true, false만 받지만, 추후 다른 값을 받을 수 있음.
+        // content가 true, false인지 확인
+        if (answer.content !== "true" && answer.content !== "false") {
+            throw new BadRequestException("저장된 답변이 긍정, 부정의 형태가 아닙니다.");
+        }
+        return {
+            id: answer.id,
+            answer: answer.content === "true"
+        };
+    }
+
+    async createAnswer(member: member, id: number, requestBody: CreateAnswerRequest): Promise<CreateAnswerResponse> {
+        // 이전에 답변이 있는지 확인
+        const previousAnswer = await this.prisma.answer.findFirst({
+            where: { question_id: id, member_id: member.id }
+        });
+        if (previousAnswer) {
+            throw new BadRequestException("이미 답변을 제출했습니다.");
+        }
+
+        // content가 true, false인지 확인
+        if (requestBody.content !== "true" && requestBody.content !== "false") {
+            throw new BadRequestException("답변은 true 또는 false만 가능합니다.");
+        }
+
+        const answer = await this.prisma.answer.create({
+            data: {
+                question_id: id,
+                content: requestBody.content,
+                member_id: member.id,
+                created_at: new Date(),
+                updated_at: new Date()
+            }
+        });
+
+        return {
+            id: answer.id
+        };
+    }
 
 }

@@ -2,18 +2,26 @@ import { Injectable, NotFoundException } from "@nestjs/common";
 import { PrismaService } from "src/modules/prisma/prisma.service";
 import GetChatsResponse from "./dto/response/get-chats-response.dto";
 import GetChatRoomsResponse from "./dto/response/get-chatrooms-response.dto";
-
+import { member } from "@prisma/client";
 @Injectable()
 export default class ChatService {
     constructor(private readonly prisma: PrismaService) { }
 
 
-    async getChatRooms(memberId: number): Promise<GetChatRoomsResponse> {
+    async getChatRooms(member: member): Promise<GetChatRoomsResponse> {
 
         // memberId를 기반으로 채팅방 조회
-        // const chatrooms = await this.prisma.chat_room.findMany({});
+        const chatrooms = await this.prisma.chat_room.findMany({
+            where: {
+                matches: {
+                    some: {
+                        anonymous_members_id: member.id
+                    }
+                }
+            }
+        });
 
-        // DUMMY DATA 
+        // FIXME: 채팅방 연결 API가 없어서 우선 제외
         const dummyChatRooms = [
             {
                 id: 1,
@@ -50,27 +58,21 @@ export default class ChatService {
     }
 
     // chatroom 조회
-    async getChats(id: number): Promise<GetChatsResponse> {
+    async getChats(member: member, id: number): Promise<GetChatsResponse> {
 
         const chatroom = await this.prisma.chat_room.findUnique({
             where: {
                 id: id,
             },
         });
-        console.log("chatroom: ", chatroom);
-
-        // if (!chatroom) {
-        //     throw new NotFoundException("채팅방을 찾을 수 없습니다.");
-        // }
 
         const chats = await this.prisma.chat.findMany({
             where: {
                 chat_room_id: id,
             },
         });
-        console.log("chats: ", chats);
 
-        // FIXME: DUMMY DATA
+        // FIXME: 챗 API가 없어서 우선 제외
         const dummyChats = [
             {
                 id: 1,

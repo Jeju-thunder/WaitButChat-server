@@ -72,6 +72,7 @@ model anonymous_members {
   id                Int   @id @default(autoincrement())
   member_id        Int
   member           member @relation(fields: [member_id], references: [id])
+  nickname         String
   created_at       DateTime @db.Timestamptz()
   updated_at       DateTime? @db.Timestamptz()
   matches          match[]

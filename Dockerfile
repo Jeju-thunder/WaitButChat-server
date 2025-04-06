@@ -22,8 +22,11 @@ RUN pnpm prisma generate
 # 6. NestJS 빌드
 RUN pnpm run build
 
+# 시작 스크립트에 실행 권한 부여
+RUN chmod +x start.sh
+
 # 7. 컨테이너 실행 시 실행할 명령어
-CMD ["pnpm", "run", "start:prod"]
+CMD ["./start.sh"]
 
 # 8. 포트 개방
 EXPOSE 8080

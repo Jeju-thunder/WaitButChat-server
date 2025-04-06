@@ -75,7 +75,8 @@ export class MatchGateway {
                 const chatRoom = await this.prismaService.chat_room.create({
                     data: {
                         created_at: new Date(),
-                        updated_at: new Date()
+                        updated_at: new Date(),
+                        question_id: Number(questionId)
                     }
                 });
                 // 먼저 사용자를 익명의 사용자로 생성함.

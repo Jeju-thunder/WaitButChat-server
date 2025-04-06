@@ -10,6 +10,9 @@ import QuestionModule from './question/question.module';
 import AuthModule from './auth/auth.module';
 import { PassportModule } from '@nestjs/passport';
 import { JWT_STRATEGY } from './auth/strategies/jwt.strategy';
+import { MatchModule } from './websocket/match/match.module';
+import { ChatModule as WebsocketChatModule } from './websocket/chat/chat.module';
+
 @Module({
   imports: [
     PrismaModule,
@@ -21,7 +24,9 @@ import { JWT_STRATEGY } from './auth/strategies/jwt.strategy';
     ScheduleModule.forRoot(),
     QuestionModule,
     AuthModule,
-    PassportModule.register({ defaultStrategy: JWT_STRATEGY })
+    PassportModule.register({ defaultStrategy: JWT_STRATEGY }),
+    MatchModule,
+    WebsocketChatModule,
   ],
   controllers: [AppController],
   providers: [AppService, SchedulerService],

@@ -47,7 +47,7 @@ export default class ChatService {
                     content: lastChat ? lastChat.content : '',
                     created_at: chatroom.created_at.toISOString(),
                     updated_at: lastChat ? lastChat.created_at.toISOString() : null,
-                    created_by: lastChat ? lastChat.createdByAnonymousMember.nickname : '',
+                    updated_by: lastChat ? lastChat.createdByAnonymousMember.nickname : '',
                     terminated_at: chatroom.terminated_at?.toISOString() ?? null,
                 }
             })

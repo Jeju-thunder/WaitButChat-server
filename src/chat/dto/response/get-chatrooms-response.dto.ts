@@ -8,6 +8,6 @@ export class ChatRoomDto {
     content: string;
     created_at: string;
     updated_at: string | null;
-    created_by: string;
+    updated_by: string;
     terminated_at: string | null;
 }

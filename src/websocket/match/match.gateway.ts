@@ -71,66 +71,100 @@ export class MatchGateway {
             const matchedSocket = this.memberSockets.get(matchedMemberId);
 
             if (matchedSocket) {
-                // 매칭을 진행함.
-                const chatRoom = await this.prismaService.chat_room.create({
-                    data: {
-                        created_at: new Date(),
-                        updated_at: new Date(),
-                        question_id: Number(questionId)
-                    }
-                });
-                // 먼저 사용자를 익명의 사용자로 생성함.
-                const anonymousMember = await this.prismaService.anonymous_members.create({
-                    data: {
-                        member_id: Number(memberId),
-                        nickname: generateRandomNickname(),
-                        created_at: new Date(),
-                        updated_at: new Date()
-                    }
-                });
-                const anonymousMachedMember = await this.prismaService.anonymous_members.create({
-                    data: {
-                        member_id: Number(matchedMemberId),
-                        nickname: generateRandomNickname(),
-                        created_at: new Date(),
-                        updated_at: new Date()
-                    }
-                });
-                // 채팅방과 매칭정보 생성
-                const memberChatMatch = await this.prismaService.match.create({
-                    data: {
-                        chat_room_id: chatRoom.id,
-                        anonymous_members_id: anonymousMember.id,
-                        created_at: new Date(),
-                        updated_at: new Date()
-                    }
-                });
-                const matchedMemberChatMatch = await this.prismaService.match.create({
-                    data: {
-                        chat_room_id: chatRoom.id,
-                        anonymous_members_id: anonymousMachedMember.id,
-                        created_at: new Date(),
-                        updated_at: new Date()
-                    }
-                });
+                try {
+                    // 트랜잭션 시작
+                    const result = await this.prismaService.$transaction(async (prisma) => {
+                        // 채팅방 생성
+                        const chatRoom = await prisma.chat_room.create({
+                            data: {
+                                created_at: new Date(),
+                                updated_at: new Date(),
+                                question_id: Number(questionId)
+                            }
+                        });
 
-                // 매칭된 사용자에게 알림
-                matchedSocket.emit('match', {
-                    message: '성공적으로 매칭되었습니다.',
-                    other_member_id: memberId,
-                    chatroom_id: chatRoom.id,
-                    match_id: memberChatMatch.id,
-                });
-                // 현재 사용자에게 알림
-                client.emit('match', {
-                    message: '성공적으로 매칭되었습니다.',
-                    other_member_id: matchedMemberId,
-                    chatroom_id: chatRoom.id,
-                    match_id: matchedMemberChatMatch.id,
-                });
-                // 매칭된 사용자 제거
-                members.delete(matchedMemberId);
+                        // 익명 사용자 생성
+                        const anonymousMember = await prisma.anonymous_members.create({
+                            data: {
+                                member_id: Number(memberId),
+                                nickname: generateRandomNickname(),
+                                created_at: new Date(),
+                                updated_at: new Date()
+                            }
+                        });
 
+                        const anonymousMachedMember = await prisma.anonymous_members.create({
+                            data: {
+                                member_id: Number(matchedMemberId),
+                                nickname: generateRandomNickname(),
+                                created_at: new Date(),
+                                updated_at: new Date()
+                            }
+                        });
+
+                        // 채팅방과 매칭정보 생성
+                        const memberChatMatch = await prisma.match.create({
+                            data: {
+                                chat_room_id: chatRoom.id,
+                                anonymous_members_id: anonymousMember.id,
+                                created_at: new Date(),
+                                updated_at: new Date()
+                            }
+                        });
+
+                        const matchedMemberChatMatch = await prisma.match.create({
+                            data: {
+                                chat_room_id: chatRoom.id,
+                                anonymous_members_id: anonymousMachedMember.id,
+                                created_at: new Date(),
+                                updated_at: new Date()
+                            }
+                        });
+
+                        return {
+                            chatRoom,
+                            anonymousMember,
+                            anonymousMachedMember,
+                            memberChatMatch,
+                            matchedMemberChatMatch
+                        };
+                    });
+
+                    // 트랜잭션이 성공적으로 완료된 후에만 소켓 이벤트 전송
+                    // 매칭된 사용자에게 알림
+                    matchedSocket.emit('match', {
+                        message: '성공적으로 매칭되었습니다.',
+                        other_member_id: memberId,
+                        chatroom_id: result.chatRoom.id,
+                        match_id: result.matchedMemberChatMatch.id,
+                    });
+
+                    // 현재 사용자에게 알림
+                    client.emit('match', {
+                        message: '성공적으로 매칭되었습니다.',
+                        other_member_id: matchedMemberId,
+                        chatroom_id: result.chatRoom.id,
+                        match_id: result.memberChatMatch.id,
+                    });
+
+                    // 매칭된 사용자 제거
+                    members.delete(matchedMemberId);
+                } catch (error) {
+                    console.error('매칭 처리 중 오류 발생:', error);
+                    // 에러 발생 시 양쪽 사용자 모두 대기열에서 제거
+                    members.delete(memberId);
+                    members.delete(matchedMemberId);
+
+                    // 에러 메시지 전송
+                    client.emit('match', {
+                        message: '매칭 처리 중 오류가 발생했습니다. 다시 시도해주세요.',
+                        error: true
+                    });
+                    matchedSocket.emit('match', {
+                        message: '매칭 처리 중 오류가 발생했습니다. 다시 시도해주세요.',
+                        error: true
+                    });
+                }
             } else {
                 // 매칭된 사용자의 소켓이 없는 경우 (연결이 끊어진 경우)
                 members.delete(matchedMemberId);

@@ -91,6 +91,7 @@ model match {
   anonymousMembers      anonymous_members @relation(fields: [anonymous_members_id], references: [id])
   created_at           DateTime @db.Timestamptz()
   updated_at           DateTime? @db.Timestamptz()
+  terminated_at        DateTime? @db.Timestamptz()
 }
 
 model chat {

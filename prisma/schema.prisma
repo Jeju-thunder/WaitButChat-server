@@ -34,7 +34,6 @@ model member {
 model register_blacklist {
   id          Int   @id @default(autoincrement())
   email          String
-  period_days Int
   created_at  DateTime @db.Timestamptz()
   updated_at  DateTime? @db.Timestamptz()
 }

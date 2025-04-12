@@ -24,6 +24,7 @@ model member {
   manner_status     Int
   created_at        DateTime @db.Timestamptz()
   updated_at        DateTime? @db.Timestamptz()
+  deleted_at        DateTime? @db.Timestamptz()
   answers           answer[]
   anonymous_members  anonymous_members[]
   reporter          report[] @relation("reporter")

@@ -39,8 +39,6 @@ export class MatchGateway {
         const questionId = data?.questionId;
         const memberId = data?.memberId;
 
-        console.log("match 요청 - questionId:", questionId, "memberId:", memberId);
-
         // 필수 파라미터 체크
         if (!questionId || !memberId) {
             client.emit('match', { message: 'questionId와 memberId가 필요합니다' });
@@ -236,7 +234,6 @@ export class MatchGateway {
             for (const [questionId, members] of this.requestQuestionMemberIds.entries()) {
                 if (members.has(disconnectedMemberId)) {
                     members.delete(disconnectedMemberId);
-                    console.log(`연결 끊김: ${disconnectedMemberId} (질문 ${questionId})`);
                 }
             }
         }

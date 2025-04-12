@@ -45,7 +45,6 @@ export class MemberService {
             await tx.register_blacklist.create({
                 data: {
                     email: member.email,
-                    period_days: 30,
                     created_at: new Date()
                 }
             })

@@ -16,8 +16,9 @@ export default class ChatService {
                     some: {
                         anonymousMembers: {
                             member_id: member.id
-                        }
-                    }
+                        },
+                        terminated_at: null
+                    },
                 }
             },
             include: {
@@ -54,6 +55,67 @@ export default class ChatService {
         };
 
         return chatrooms_response;
+    }
+
+    async deleteChatRooms(member: member, ids: number[]): Promise<void> {
+        const chatrooms = await this.prisma.chat_room.findMany({
+            where: {
+                id: { in: ids },
+                matches: {
+                    some: {
+                        anonymousMembers: {
+                            member_id: member.id
+                        },
+                        terminated_at: null
+                    },
+                },
+            },
+            include: {
+                matches: {
+                    where: {
+                        anonymousMembers: {
+                            member_id: member.id
+                        },
+                        terminated_at: null
+                    }
+                }
+            }
+        });
+
+
+        if (chatrooms.length !== ids.length) {
+            throw new NotFoundException("삭제하고자 하는 모든 채팅방을 찾을 수 없습니다");
+        }
+
+        const now = new Date();
+
+        // transaction으로 chatroom과 matches를 함께 업데이트
+        await this.prisma.$transaction(async (tx) => {
+            // 채팅방 업데이트
+            await tx.chat_room.updateMany({
+                where: {
+                    id: { in: ids }
+                },
+                data: {
+                    terminated_at: now
+                }
+            });
+
+            // matches 업데이트
+            await tx.match.updateMany({
+                where: {
+                    chat_room_id: { in: ids },
+                    anonymousMembers: {
+                        member_id: member.id
+                    },
+                },
+                data: {
+                    terminated_at: now
+                }
+            });
+        });
+
+        return;
     }
 
     // chatroom 조회

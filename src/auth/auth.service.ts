@@ -53,6 +53,25 @@ export default class AuthService {
     if (user) {
       throw new BadRequestException("이미 존재하는 유저입니다.");
     }
+
+    // register_blacklist 조회
+    const REJOIN_BLOCK_PERIOD_DAYS = 30;
+    const rejoinBlockDate = new Date();
+    rejoinBlockDate.setDate(rejoinBlockDate.getDate() - REJOIN_BLOCK_PERIOD_DAYS);
+
+    const registerBlacklist = await this.prismaService.register_blacklist.findFirst({
+      where: {
+        email: email,
+        created_at: {
+          gte: rejoinBlockDate
+        }
+      }
+    });
+
+    if (registerBlacklist) {
+      throw new BadRequestException("탈퇴 후 재가입 불가 기간입니다.");
+    }
+
     const newUser = await this.prismaService.member.create({
       data: {
         kakao_id: Number(kakaoId),

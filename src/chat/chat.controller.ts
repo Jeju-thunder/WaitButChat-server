@@ -1,4 +1,4 @@
-import { Controller, Get, HttpStatus, Param, ParseIntPipe, UseGuards } from "@nestjs/common";
+import { Controller, Delete, Get, HttpStatus, Param, ParseArrayPipe, ParseIntPipe, Query, UseGuards } from "@nestjs/common";
 import ChatService from "./chat.service";
 import GetChatsResponse from "./dto/response/get-chats-response.dto";
 import CustomResponse from "src/structure/custom-response";
@@ -17,6 +17,12 @@ export default class ChatController {
     async getChatRooms(@GetMember() member: member): Promise<CustomResponse<GetChatRoomsResponse>> {
         const data = await this.chatService.getChatRooms(member);
         return new CustomResponse(200, HttpStatus[HttpStatus.OK], "채팅방 목록 조회 성공", data);
+    }
+
+    @Delete("")
+    async deleteChatRooms(@GetMember() member: member, @Query("ids", new ParseArrayPipe({ items: Number, separator: ',' })) ids: number[]): Promise<CustomResponse<{}>> {
+        await this.chatService.deleteChatRooms(member, ids);
+        return new CustomResponse(200, HttpStatus[HttpStatus.OK], "채팅방 삭제 성공", {});
     }
 
     @Get(":id/chat")

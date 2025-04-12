@@ -12,6 +12,7 @@ import { PassportModule } from '@nestjs/passport';
 import { JWT_STRATEGY } from './auth/strategies/jwt.strategy';
 import { MatchModule } from './websocket/match/match.module';
 import { ChatModule as WebsocketChatModule } from './websocket/chat/chat.module';
+import { MemberModule } from './member/member.module';
 
 @Module({
   imports: [
@@ -27,6 +28,7 @@ import { ChatModule as WebsocketChatModule } from './websocket/chat/chat.module'
     PassportModule.register({ defaultStrategy: JWT_STRATEGY }),
     MatchModule,
     WebsocketChatModule,
+    MemberModule,
   ],
   controllers: [AppController],
   providers: [AppService, SchedulerService],

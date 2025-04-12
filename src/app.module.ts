@@ -13,6 +13,7 @@ import { JWT_STRATEGY } from './auth/strategies/jwt.strategy';
 import { MatchModule } from './websocket/match/match.module';
 import { ChatModule as WebsocketChatModule } from './websocket/chat/chat.module';
 import { MemberModule } from './member/member.module';
+import { ReportModule } from './report/report.module';
 
 @Module({
   imports: [
@@ -29,6 +30,7 @@ import { MemberModule } from './member/member.module';
     MatchModule,
     WebsocketChatModule,
     MemberModule,
+    ReportModule,
   ],
   controllers: [AppController],
   providers: [AppService, SchedulerService],

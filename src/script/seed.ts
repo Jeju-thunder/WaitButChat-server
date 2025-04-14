@@ -7,7 +7,7 @@ const prisma = new PrismaClient();
 async function main() {
     // Read the JSON file
     const questionData = JSON.parse(
-        fs.readFileSync(path.join(__dirname, 'seed_data/seed_question_1.json'), 'utf-8')
+        fs.readFileSync(path.join(__dirname, 'seed_data/seed_question_2.json'), 'utf-8')
     );
 
     // Map the questions to match the schema

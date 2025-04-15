@@ -2,7 +2,7 @@ import { Controller, Delete, Get, HttpStatus, Param, ParseIntPipe, UseGuards } f
 import { MemberService } from "./member.service";
 import { GetMember } from "src/interface/decorator/get-member.decorator";
 import { AuthGuard } from "@nestjs/passport";
-import { JWT_STRATEGY } from "src/api/auth/strategies/jwt.strategy";
+import { JWT_STRATEGY } from "../auth/strategies/jwt.strategy";
 import { member } from "@prisma/client";
 import CustomResponse from "src/interface/custom-response";
 import { GetMemberResponseDto } from "./dto/response/get-member.response.dto";

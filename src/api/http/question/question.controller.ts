@@ -1,6 +1,6 @@
 import { Body, Controller, Get, HttpStatus, Param, ParseIntPipe, Post, Req, UseGuards } from "@nestjs/common";
 import QuestionService from "./question.service";
-import { JWT_STRATEGY } from "src/api/auth/strategies/jwt.strategy";
+import { JWT_STRATEGY } from "../auth/strategies/jwt.strategy";
 import { AuthGuard } from "@nestjs/passport";
 import CustomResponse from "src/interface/custom-response";
 import GetQuestionResponse from "./dto/response/get-question.response.dto";

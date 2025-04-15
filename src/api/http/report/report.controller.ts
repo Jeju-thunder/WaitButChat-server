@@ -1,7 +1,7 @@
 import { Body, Controller, HttpStatus, Post, UseGuards } from "@nestjs/common";
 import { ReportService } from "./report.service";
 import { AuthGuard } from "@nestjs/passport";
-import { JWT_STRATEGY } from "src/api/auth/strategies/jwt.strategy";
+import { JWT_STRATEGY } from "../auth/strategies/jwt.strategy";
 import { CreateReportDto } from "./dto/request/create-report.request.dto";
 import { GetMember } from "src/interface/decorator/get-member.decorator";
 import { member } from "@prisma/client";

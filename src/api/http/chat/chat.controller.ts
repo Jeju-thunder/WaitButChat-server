@@ -6,7 +6,7 @@ import GetChatRoomsResponse from "./dto/response/get-chatrooms-response.dto";
 import { GetMember } from "src/interface/decorator/get-member.decorator";
 import { member } from "@prisma/client";
 import { AuthGuard } from "@nestjs/passport";
-import { JWT_STRATEGY } from "src/api/auth/strategies/jwt.strategy";
+import { JWT_STRATEGY } from "../auth/strategies/jwt.strategy";
 
 @Controller('chatrooms')
 @UseGuards(AuthGuard(JWT_STRATEGY))

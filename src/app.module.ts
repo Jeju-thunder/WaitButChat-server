@@ -1,19 +1,16 @@
 import { ScheduleModule } from '@nestjs/schedule';
 import { Module } from '@nestjs/common';
-import { AppController } from './app.controller';
-import { AppService } from './app.service';
 import { ConfigModule } from '@nestjs/config';
-import PrismaModule from './modules/prisma/prisma.module';
-import ChatModule from './chat/chat.module';
-import { SchedulerService } from './scheduler/scheduler.service';
-import QuestionModule from './question/question.module';
-import AuthModule from './auth/auth.module';
+import PrismaModule from './providers/prisma/prisma.module';
+import { SchedulerService } from './providers/scheduler/scheduler.service';
+import QuestionModule from './api/http/question/question.module';
 import { PassportModule } from '@nestjs/passport';
-import { JWT_STRATEGY } from './auth/strategies/jwt.strategy';
-import { MatchModule } from './websocket/match/match.module';
-import { ChatModule as WebsocketChatModule } from './websocket/chat/chat.module';
-import { MemberModule } from './member/member.module';
-import { ReportModule } from './report/report.module';
+import { MatchModule } from './api/socket/match/match.module';
+import { ChatModule, ChatModule as WebsocketChatModule } from './api/socket/chat/chat.module';
+import { MemberModule } from './api/http/member/member.module';
+import { ReportModule } from './api/http/report/report.module';
+import { JWT_STRATEGY } from './api/http/auth/strategies/jwt.strategy';
+import AuthModule from './api/http/auth/auth.module';
 
 @Module({
   imports: [
@@ -32,7 +29,7 @@ import { ReportModule } from './report/report.module';
     MemberModule,
     ReportModule,
   ],
-  controllers: [AppController],
-  providers: [AppService, SchedulerService],
+  controllers: [],
+  providers: [SchedulerService],
 })
 export class AppModule { }

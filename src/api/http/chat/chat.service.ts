@@ -1,44 +1,19 @@
 import { Injectable, NotFoundException } from "@nestjs/common";
-import { PrismaService } from "src/providers/prisma/prisma.service";
 import GetChatsResponse, { ChatDto } from "./dto/response/get-chats-response.dto";
 import GetChatRoomsResponse from "./dto/response/get-chatrooms-response.dto";
 import { member } from "@prisma/client";
+import { ChatRepository } from "./chat.repository";
+
 @Injectable()
 export default class ChatService {
-    constructor(private readonly prisma: PrismaService) { }
+    constructor(
+        private readonly chatRepository: ChatRepository
+    ) { }
 
 
     async getChatRooms(member: member): Promise<GetChatRoomsResponse> {
         // memberId를 기반으로 채팅방 조회
-        const chatrooms = await this.prisma.chat_room.findMany({
-            where: {
-                matches: {
-                    some: {
-                        anonymousMembers: {
-                            member_id: member.id
-                        },
-                        terminated_at: null
-                    },
-                }
-            },
-            include: {
-                matches: {
-                    include: {
-                        anonymousMembers: true
-                    }
-                },
-                question: true,
-                chats: {
-                    include: {
-                        createdByAnonymousMember: true
-                    },
-                    orderBy: {
-                        created_at: 'desc'
-                    },
-                    take: 1
-                }
-            },
-        });
+        const chatrooms = await this.chatRepository.getChatRooms(member);
         const chatrooms_response: GetChatRoomsResponse = {
             chatrooms: chatrooms.map((chatroom) => {
                 const lastChat = chatroom.chats[0];
@@ -58,62 +33,14 @@ export default class ChatService {
     }
 
     async deleteChatRooms(member: member, ids: number[]): Promise<void> {
-        const chatrooms = await this.prisma.chat_room.findMany({
-            where: {
-                id: { in: ids },
-                matches: {
-                    some: {
-                        anonymousMembers: {
-                            member_id: member.id
-                        },
-                        terminated_at: null
-                    },
-                },
-            },
-            include: {
-                matches: {
-                    where: {
-                        anonymousMembers: {
-                            member_id: member.id
-                        },
-                        terminated_at: null
-                    }
-                }
-            }
-        });
-
+        const chatrooms = await this.chatRepository.getChatRoomsByIds(member.id, ids);
 
         if (chatrooms.length !== ids.length) {
             throw new NotFoundException("삭제하고자 하는 모든 채팅방을 찾을 수 없습니다");
         }
 
-        const now = new Date();
-
-        // transaction으로 chatroom과 matches를 함께 업데이트
-        await this.prisma.$transaction(async (tx) => {
-            // 채팅방 업데이트
-            await tx.chat_room.updateMany({
-                where: {
-                    id: { in: ids }
-                },
-                data: {
-                    terminated_at: now
-                }
-            });
-
-            // matches 업데이트
-            await tx.match.updateMany({
-                where: {
-                    chat_room_id: { in: ids },
-                    anonymousMembers: {
-                        member_id: member.id
-                    },
-                },
-                data: {
-                    terminated_at: now
-                }
-            });
-        });
+        const terminated_at = new Date();
+        await this.chatRepository.deleteChatRooms(member.id, ids, terminated_at);
 
         return;
     }
@@ -121,38 +48,7 @@ export default class ChatService {
     // chatroom 조회
     async getChats(member: member, id: number): Promise<GetChatsResponse> {
 
-        const chatroom = await this.prisma.chat_room.findUnique({
-            where: {
-                id: id,
-                matches: {
-                    some: {
-                        anonymousMembers: {
-                            member_id: member.id
-                        }
-                    }
-                }
-            },
-            include: {
-                chats: {
-                    include: {
-                        createdByAnonymousMember: true
-                    },
-                    orderBy: {
-                        created_at: "asc"
-                    }
-                },
-                matches: {
-                    include: {
-                        anonymousMembers: {
-                            include: {
-                                member: true
-                            }
-                        }
-                    }
-                }
-            },
-        });
-
+        const chatroom = await this.chatRepository.getChatRoomsByIdForMember(member.id, id);
         if (!chatroom) {
             throw new NotFoundException("채팅방을 찾을 수 없습니다.");
         }

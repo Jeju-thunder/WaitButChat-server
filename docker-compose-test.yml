@@ -1,0 +1,44 @@
+version: '3.8'
+
+services:
+  db:
+    image: postgres:16.8-alpine
+    container_name: postgres_db
+    restart: always
+    environment:
+      POSTGRES_USER: test_user
+      POSTGRES_PASSWORD: test_password
+      POSTGRES_DB: wait_but_chat
+    ports:
+      - "5435:5432"
+    networks:
+      - app_network
+    volumes:
+      - db_data:/var/lib/postgresql/data
+
+  app:
+    build: .
+    container_name: nestjs_app
+    restart: always
+    ports:
+      - "8080:8080"
+    environment:
+      DATABASE_URL: postgres://test_user:test_password@db:5432/wait_but_chat
+      # 프론트엔드가 호스트에서 뜨는 경우 (Mac/Windows)
+      CLIENT_URL: http://host.docker.internal:3000
+    depends_on:
+      - db
+    networks:
+      - app_network
+    command: >
+      sh -c "
+        pnpm run prisma:migrate &&
+        pnpm run prisma:prod-seed &&
+        pnpm run start:prod
+      "
+
+networks:
+  app_network:
+
+volumes:
+  db_data: 

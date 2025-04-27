@@ -1,6 +1,13 @@
 
 ## Docker 환경에서 실행하기
 
+### 0. env 설정
+
+https://www.notion.so/kukjun/env-1e2613af9f3b80ac9272d397180ca7c7?pvs=4
+
+을 기반으로 .env 파일 생성
+
+
 ### 1. Docker로 전체 서비스 실행
 
 아래 명령어로 NestJS 서버와 PostgreSQL DB를 한 번에 실행할 수 있습니다.

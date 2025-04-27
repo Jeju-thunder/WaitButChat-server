@@ -1,14 +1,14 @@
 import { PrismaClient } from '@prisma/client';
 import * as fs from 'fs';
 import * as path from 'path';
+import { seedQuestion1 } from './seed_data/seed_question';
 
 const prisma = new PrismaClient();
 
 async function main() {
+
     // Read the JSON file
-    const questionData = JSON.parse(
-        fs.readFileSync(path.join(__dirname, 'seed_data/seed_question_2.json'), 'utf-8')
-    );
+    const questionData = seedQuestion1;
 
     // Map the questions to match the schema
     const questions = questionData.questions.map((q) => ({

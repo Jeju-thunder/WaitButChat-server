@@ -1,5 +1,5 @@
 import { Injectable } from "@nestjs/common";
-import { anonymous_members, chat_room, match, member } from "@prisma/client";
+import { anonymous_members, chat_room, chat, match, member } from "@prisma/client";
 import { PrismaService } from "src/providers/prisma/prisma.service";
 import { ChatRoomWithRelationsForGetChatRooms, ChatRoomWithRelationsForGetChatRoomsById, ChatRoomWithRelationsForGetChatRoomsByIds, MatchWithRelationsForGetMatch } from "src/interface/query-type";
 import { CreateChatDto } from "./dto/request/create-chat.dto";

@@ -1,7 +1,5 @@
 import { Server, Socket } from 'socket.io';
 import { MessageBody, SubscribeMessage, WebSocketGateway, WebSocketServer, ConnectedSocket } from "@nestjs/websockets";
-import { PrismaService } from 'src/providers/prisma/prisma.service';
-import { generateRandomNickname } from 'src/utils/nickname.generator';
 import { ChatRepository } from 'src/api/http/chat/chat.repository';
 
 interface MemberSocket {
@@ -68,7 +66,7 @@ export class MatchGateway {
 
             if (matchedSocket) {
                 try {
-                    const result = await this.chatRepository.createChatRoomWithMatches(questionId, memberId, matchedMemberId);
+                    const result = await this.chatRepository.createChatRoomWithMatches(questionId, memberId, Number(matchedMemberId));
 
                     // 트랜잭션이 성공적으로 완료된 후에만 소켓 이벤트 전송
                     // 매칭된 사용자에게 알림

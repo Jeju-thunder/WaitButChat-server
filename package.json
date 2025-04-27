@@ -18,7 +18,8 @@
     "test:cov": "jest --coverage",
     "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
     "test:e2e": "jest --config ./test/jest-e2e.json",
-    "prisma:seed": "ts-node src/script/seed.ts",
+    "prisma:seed": "ts-node src/utils/script/seed.ts",
+    "prisma:prod-seed": "node dist/utils/script/seed.js",
     "prisma:generate": "prisma generate",
     "prisma:dev": "prisma migrate dev",
     "prisma:migrate": "prisma migrate deploy"

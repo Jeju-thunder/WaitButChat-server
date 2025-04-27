@@ -18,11 +18,10 @@ interface ChatMessage {
         origin: '*',
     },
 })
-export class ChatGateway {
+export class ChatSocketGateway {
     @WebSocketServer()
     server: Server;
     constructor(
-        private readonly prismaService: PrismaService,
         private readonly chatRepository: ChatRepository
     ) { }
 

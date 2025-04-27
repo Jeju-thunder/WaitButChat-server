@@ -1,7 +1,6 @@
 import { Server, Socket } from 'socket.io';
 import { MessageBody, SubscribeMessage, WebSocketGateway, WebSocketServer, ConnectedSocket } from "@nestjs/websockets";
-import { PrismaService } from 'src/providers/prisma/prisma.service';
-import { generateRandomNickname } from 'src/utils/nickname.generator';
+import { ChatRepository } from 'src/api/http/chat/chat.repository';
 
 interface MemberSocket {
     memberId: string;
@@ -27,12 +26,9 @@ export class MatchGateway {
     // 각 memberId와 socket을 매핑
     private memberSockets = new Map<string, Socket>();
 
-    // prisma 서비스
-    private readonly prismaService: PrismaService;
-
-    constructor(prismaService: PrismaService) {
-        this.prismaService = prismaService;
-    }
+    constructor(
+        private readonly chatRepository: ChatRepository
+    ) { }
 
     @SubscribeMessage('match')
     async handleMatch(@MessageBody() data: any, @ConnectedSocket() client: Socket) {
@@ -70,63 +66,7 @@ export class MatchGateway {
 
             if (matchedSocket) {
                 try {
-                    // 트랜잭션 시작
-                    const result = await this.prismaService.$transaction(async (prisma) => {
-                        // 채팅방 생성
-                        const chatRoom = await prisma.chat_room.create({
-                            data: {
-                                created_at: new Date(),
-                                updated_at: new Date(),
-                                question_id: Number(questionId)
-                            }
-                        });
-
-                        // 익명 사용자 생성
-                        const anonymousMember = await prisma.anonymous_members.create({
-                            data: {
-                                member_id: Number(memberId),
-                                nickname: generateRandomNickname(),
-                                created_at: new Date(),
-                                updated_at: new Date()
-                            }
-                        });
-
-                        const anonymousMachedMember = await prisma.anonymous_members.create({
-                            data: {
-                                member_id: Number(matchedMemberId),
-                                nickname: generateRandomNickname(),
-                                created_at: new Date(),
-                                updated_at: new Date()
-                            }
-                        });
-
-                        // 채팅방과 매칭정보 생성
-                        const memberChatMatch = await prisma.match.create({
-                            data: {
-                                chat_room_id: chatRoom.id,
-                                anonymous_members_id: anonymousMember.id,
-                                created_at: new Date(),
-                                updated_at: new Date()
-                            }
-                        });
-
-                        const matchedMemberChatMatch = await prisma.match.create({
-                            data: {
-                                chat_room_id: chatRoom.id,
-                                anonymous_members_id: anonymousMachedMember.id,
-                                created_at: new Date(),
-                                updated_at: new Date()
-                            }
-                        });
-
-                        return {
-                            chatRoom,
-                            anonymousMember,
-                            anonymousMachedMember,
-                            memberChatMatch,
-                            matchedMemberChatMatch
-                        };
-                    });
+                    const result = await this.chatRepository.createChatRoomWithMatches(questionId, memberId, Number(matchedMemberId));
 
                     // 트랜잭션이 성공적으로 완료된 후에만 소켓 이벤트 전송
                     // 매칭된 사용자에게 알림

@@ -1,12 +1,9 @@
 import { JwtService } from '@nestjs/jwt';
-import {
-  member,
-  PrismaClient,
-} from "@prisma/client"
+import { member } from "@prisma/client"
 import { Profile } from 'passport-kakao';
 import { BadRequestException, Injectable, UnprocessableEntityException } from '@nestjs/common';
-import { PrismaService } from 'src/providers/prisma/prisma.service';
 import { ConfigService } from '@nestjs/config';
+import { AuthRepository } from './auth.repository';
 
 @Injectable()
 export default class AuthService {
@@ -15,7 +12,7 @@ export default class AuthService {
 
   constructor(
     private readonly jwtService: JwtService,
-    private readonly prismaService: PrismaService,
+    private readonly authRepository: AuthRepository,
     private readonly configService: ConfigService,
   ) {
     this.jwtExpiresIn = this.configService.get<string>("JWT_EXPIRES_IN") ?? "1h";
@@ -27,11 +24,7 @@ export default class AuthService {
     const email = _json.kakao_account.email;
     const gender = _json.kakao_account.gender === 'male' ? 'M' : 'F';
 
-    const user = await this.prismaService.member.findFirst({
-      where: {
-        kakao_id: Number(id),
-      }
-    });
+    const user = await this.authRepository.findMemberByKakaoId(Number(id));
 
     if (user) {
       return this.loginUser(user);
@@ -45,11 +38,7 @@ export default class AuthService {
     if (!kakaoId || !email || !gender) {
       throw new UnprocessableEntityException('모든 파라미터(kakaoId, email, gender)가 필요합니다.');
     }
-    const user = await this.prismaService.member.findUnique({
-      where: {
-        kakao_id: Number(kakaoId),
-      }
-    })
+    const user = await this.authRepository.findMemberByKakaoId(Number(kakaoId));
     if (user) {
       throw new BadRequestException("이미 존재하는 유저입니다.");
     }
@@ -59,29 +48,21 @@ export default class AuthService {
     const rejoinBlockDate = new Date();
     rejoinBlockDate.setDate(rejoinBlockDate.getDate() - REJOIN_BLOCK_PERIOD_DAYS);
 
-    const registerBlacklist = await this.prismaService.register_blacklist.findFirst({
-      where: {
-        email: email,
-        created_at: {
-          gte: rejoinBlockDate
-        }
-      }
-    });
+    const registerBlacklist = await this.authRepository.findBlacklistByEmail(email, rejoinBlockDate);
 
     if (registerBlacklist) {
       throw new BadRequestException("탈퇴 후 재가입 불가 기간입니다.");
     }
 
-    const newUser = await this.prismaService.member.create({
-      data: {
-        kakao_id: Number(kakaoId),
-        email: email,
-        gender: gender,
-        provider: 'local',
-        manner_status: 0,
-        created_at: new Date(),
-      },
-    });
+    const createMemberDto = {
+      kakao_id: Number(kakaoId),
+      email: email,
+      gender: gender,
+      provider: 'local',
+      manner_status: 0,
+      created_at: new Date(),
+    }
+    const newUser = await this.authRepository.createMember(createMemberDto);
     return await this.localSignin(newUser.kakao_id.toString());
   }
 
@@ -90,11 +71,7 @@ export default class AuthService {
     if (!kakaoId) {
       throw new UnprocessableEntityException('모든 파라미터(kakaoId)가 필요합니다.');
     }
-    const user = await this.prismaService.member.findFirst({
-      where: {
-        kakao_id: Number(kakaoId),
-      },
-    });
+    const user = await this.authRepository.findMemberByKakaoId(Number(kakaoId));
 
     if (!user) {
       throw new BadRequestException("존재하지 않는 유저입니다.");
@@ -113,16 +90,16 @@ export default class AuthService {
   }
 
   private async registerUser(kakaoId: string, email: string, gender: string): Promise<any> {
-    const newUser = await this.prismaService.member.create({
-      data: {
-        kakao_id: Number(kakaoId),
-        email: email,
-        gender: gender,
-        provider: 'kakao',
-        manner_status: 0,
-        created_at: new Date(),
-      },
-    });
+
+    const createMemberDto = {
+      kakao_id: Number(kakaoId),
+      email: email,
+      gender: gender,
+      provider: 'kakao',
+      manner_status: 0,
+      created_at: new Date(),
+    }
+    const newUser = await this.authRepository.createMember(createMemberDto);
     const payload = { sub: newUser.id, kakaoId: Number(newUser.kakao_id) };
     return {
       is_signup: true,

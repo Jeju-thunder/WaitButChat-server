@@ -6,11 +6,12 @@ import { SchedulerService } from './providers/scheduler/scheduler.service';
 import QuestionModule from './api/http/question/question.module';
 import { PassportModule } from '@nestjs/passport';
 import { MatchModule } from './api/socket/match/match.module';
-import { ChatModule, ChatModule as WebsocketChatModule } from './api/socket/chat/chat.module';
+import { ChatSocketModule } from './api/socket/chat/chat-socket.module';
 import { MemberModule } from './api/http/member/member.module';
 import { ReportModule } from './api/http/report/report.module';
 import { JWT_STRATEGY } from './api/http/auth/strategies/jwt.strategy';
 import AuthModule from './api/http/auth/auth.module';
+import ChatModule from './api/http/chat/chat.module';
 
 @Module({
   imports: [
@@ -19,13 +20,13 @@ import AuthModule from './api/http/auth/auth.module';
       isGlobal: true,
       envFilePath: '.env',
     }),
-    ChatModule,
     ScheduleModule.forRoot(),
     QuestionModule,
     AuthModule,
     PassportModule.register({ defaultStrategy: JWT_STRATEGY }),
     MatchModule,
-    WebsocketChatModule,
+    ChatModule,
+    ChatSocketModule,
     MemberModule,
     ReportModule,
   ],

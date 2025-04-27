@@ -3,10 +3,11 @@ import { PrismaService } from "src/providers/prisma/prisma.service";
 import { member } from "@prisma/client";
 import { GetMemberResponseDto } from "./dto/response/get-member.response.dto";
 import { DeleteMemberResponseDto } from "./dto/response/delete-member.response.dto";
+import { MemberRepository } from "./member.repository";
 
 @Injectable()
 export class MemberService {
-    constructor(private readonly prisma: PrismaService) { }
+    constructor(private readonly memberRepository: MemberRepository) { }
 
     getMember(member: member, id: number): GetMemberResponseDto {
         if (member.id !== id) {
@@ -21,39 +22,12 @@ export class MemberService {
         }
     }
 
-    async deleteMember(member: member, id: number): Promise<DeleteMemberResponseDto> {
+    async deleteMember(member: member, id: number, deleted_at: Date = new Date()): Promise<DeleteMemberResponseDto> {
         if (member.id !== id) {
             throw new ForbiddenException("본인만 탈퇴할 수 있습니다.");
         }
 
-        const deleted_at = new Date();
-        await this.prisma.$transaction(async (tx) => {
-            // 매칭된 채팅방에서 종료 처리
-            await tx.match.updateMany({
-                where: {
-                    anonymousMembers: {
-                        member_id: id
-                    },
-                    terminated_at: null
-                },
-                data: {
-                    terminated_at: new Date()
-                }
-            })
-
-            // register_blacklist 추가
-            await tx.register_blacklist.create({
-                data: {
-                    email: member.email,
-                    created_at: new Date()
-                }
-            })
-
-            await tx.member.update({
-                where: { id },
-                data: { deleted_at: new Date() }
-            });
-        });
+        await this.memberRepository.deleteMember(member, deleted_at);
 
         return {
             id: member.id,

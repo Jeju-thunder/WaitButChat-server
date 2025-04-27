@@ -4,5 +4,11 @@
   "sourceRoot": "src",
   "compilerOptions": {
     "deleteOutDir": true
-  }
+  },
+  "assets": [
+    {
+      "include": "src/utils/script/seed_data/**/*",
+      "outDir": "dist/utils/script/seed_data"
+    }
+  ]
 }

@@ -84,6 +84,7 @@ export default class AuthService {
     const payload = { sub: user.id, kakaoId: Number(user.kakao_id) };
     return {
       isSignup: false,
+      userId: user.id,
       accessToken: this.jwtService.sign(payload, { expiresIn: this.jwtExpiresIn }),
       refreshToken: this.jwtService.sign(payload, { expiresIn: this.jwtRefreshExpiresIn }),
     };

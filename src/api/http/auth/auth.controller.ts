@@ -12,35 +12,38 @@ export default class AuthController {
   @Get('kakao/callback')
   @UseGuards(AuthGuard('kakao'))
   kakaoCallback(@Req() req): CustomResponse<any> {
-    const tokens = {
+    const userInfos = {
+      userId: req.user.userId,
       accessToken: req.user.accessToken,
       refreshToken: req.user.refreshToken,
     }
     if (req.user.isSignup) {
-      return new CustomResponse(HttpStatus.CREATED, HttpStatus[HttpStatus.CREATED], "회원가입 성공", tokens);
+      return new CustomResponse(HttpStatus.CREATED, HttpStatus[HttpStatus.CREATED], "회원가입 성공", userInfos);
     } else {
-      return new CustomResponse(HttpStatus.OK, HttpStatus[HttpStatus.OK], "로그인 성공", tokens);
+      return new CustomResponse(HttpStatus.OK, HttpStatus[HttpStatus.OK], "로그인 성공", userInfos);
     }
   }
 
   @Post("local/signup")
   async localSignup(@Body() body: { kakaoId: string, email: string, gender: string }): Promise<CustomResponse<any>> {
     const response = await this.authService.localSignup(body.kakaoId, body.email, body.gender);
-    const tokens = {
+    const userInfos = {
+      userId: response.userId,
       accessToken: response.accessToken,
       refreshToken: response.refreshToken,
     }
-    return new CustomResponse(HttpStatus.CREATED, HttpStatus[HttpStatus.CREATED], "회원가입 성공", tokens);
+    return new CustomResponse(HttpStatus.CREATED, HttpStatus[HttpStatus.CREATED], "회원가입 성공", userInfos);
   }
 
   @Post("local/signin")
   async localSignin(@Body() body: { kakaoId: string }): Promise<CustomResponse<any>> {
     const response = await this.authService.localSignin(body.kakaoId);
-    const tokens = {
+    const userInfos = {
+      userId: response.userId,
       accessToken: response.accessToken,
       refreshToken: response.refreshToken,
     }
-    return new CustomResponse(HttpStatus.OK, HttpStatus[HttpStatus.OK], "로그인 성공", tokens);
+    return new CustomResponse(HttpStatus.OK, HttpStatus[HttpStatus.OK], "로그인 성공", userInfos);
   }
 
 }

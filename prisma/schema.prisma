@@ -81,6 +81,7 @@ model anonymous_members {
   updated_at       DateTime? @db.Timestamptz()
   matches          match[]
   chats            chat[]
+  anonymous_members_chat_analysis anonymous_members_chat_analysis[]
 }
 
 model match {
@@ -103,6 +104,17 @@ model chat {
   content                     String
   created_at                  DateTime @db.Timestamptz()
   updated_at                  DateTime? @db.Timestamptz()
+}
+
+// 익명 채팅 사용자에 연결된 분석 결과
+// 전처리 작업을 최소화하고 구성이 변경될 가능성도 고려해서 JSON으로 저장
+model anonymous_members_chat_analysis {
+  id                Int   @id @default(autoincrement())
+  anonymous_members_id Int
+  anonymousMembers anonymous_members @relation(fields: [anonymous_members_id], references: [id])
+  created_at       DateTime @db.Timestamptz()
+  updated_at       DateTime? @db.Timestamptz()
+  analysis_result  Json
 }
 
 model report {

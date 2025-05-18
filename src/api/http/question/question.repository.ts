@@ -2,7 +2,9 @@ import { question, answer } from "@prisma/client";
 import { QuestionWithRelationsForGetQuestions } from "src/interface/query-type";
 import { PrismaService } from "src/providers/prisma/prisma.service";
 import CreateAnswerRequest from "./dto/request/create-answer-request.dto";
+import { Injectable } from "@nestjs/common";
 
+@Injectable()
 export class QuestionRepository {
     constructor(private readonly prisma: PrismaService) { }
 

@@ -12,6 +12,7 @@ import { ReportModule } from './api/http/report/report.module';
 import { JWT_STRATEGY } from './api/http/auth/strategies/jwt.strategy';
 import AuthModule from './api/http/auth/auth.module';
 import ChatModule from './api/http/chat/chat.module';
+import { AppController } from './api/app.controller';
 
 @Module({
   imports: [
@@ -30,7 +31,7 @@ import ChatModule from './api/http/chat/chat.module';
     MemberModule,
     ReportModule,
   ],
-  controllers: [],
+  controllers: [AppController],
   providers: [SchedulerService],
 })
 export class AppModule { }

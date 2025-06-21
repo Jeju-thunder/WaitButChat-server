@@ -13,6 +13,7 @@ import { JWT_STRATEGY } from './api/http/auth/strategies/jwt.strategy';
 import AuthModule from './api/http/auth/auth.module';
 import ChatModule from './api/http/chat/chat.module';
 import { AppController } from './api/app.controller';
+import { ChatAnalysisModule } from './providers/analysis/chat-analysis.module';
 
 @Module({
   imports: [
@@ -30,6 +31,7 @@ import { AppController } from './api/app.controller';
     ChatSocketModule,
     MemberModule,
     ReportModule,
+    ChatAnalysisModule,
   ],
   controllers: [AppController],
   providers: [SchedulerService],

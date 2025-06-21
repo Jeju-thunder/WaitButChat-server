@@ -1,9 +1,10 @@
 import { Injectable } from "@nestjs/common";
-import { anonymous_members, chat_room, chat, match, member } from "@prisma/client";
+import { anonymous_members, chat_room, chat, match, member, anonymous_members_chat_analysis } from "@prisma/client";
 import { PrismaService } from "src/providers/prisma/prisma.service";
 import { ChatRoomWithRelationsForGetChatRooms, ChatRoomWithRelationsForGetChatRoomsById, ChatRoomWithRelationsForGetChatRoomsByIds, MatchWithRelationsForGetMatch } from "src/interface/query-type";
 import { CreateChatDto } from "./dto/request/create-chat.dto";
 import { generateRandomNickname } from "src/utils/nickname.generator";
+import { ChatAnalysisResult } from "./dto/response/get-chat-analysis-response.dto";
 
 @Injectable()
 export class ChatRepository {
@@ -232,4 +233,24 @@ export class ChatRepository {
             };
         });
     }
+
+    async getAnonymousMembersChatAnalysis(anonymousMemberId: number): Promise<anonymous_members_chat_analysis[]> {
+        return await this.prisma.anonymous_members_chat_analysis.findMany({
+            where: { anonymous_members_id: anonymousMemberId }
+        });
+    }
+
+    async createAnonymousMembersChatAnalysis(anonymousMemberId: number, chatAnalysisResult: ChatAnalysisResult, created_at: Date): Promise<anonymous_members_chat_analysis> {
+        const analysisResultJson = JSON.stringify(chatAnalysisResult);
+        const analysis = await this.prisma.anonymous_members_chat_analysis.create({
+            data: {
+                anonymous_members_id: anonymousMemberId,
+                analysis_result: analysisResultJson,
+                created_at,
+                updated_at: created_at
+            }
+        });
+        return analysis;
+    }
+
 }
